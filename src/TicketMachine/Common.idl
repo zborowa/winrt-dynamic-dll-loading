@@ -1,0 +1,132 @@
+namespace TicketMachine
+{
+  // Date
+  interface IDate
+  {
+    Int32 Year;
+    Int32 Month;
+    Int32 Day;
+  };
+
+  interface ITime
+  {
+    Int32 Hh;
+    Int32 Mm;
+    Int32 Ss;
+  };
+
+  unsealed runtimeclass Date : IDate, ITime
+  {
+    Date();
+    String DateToString{ get; };
+    String TimeToString{ get; };
+  }
+
+  // Common
+  interface ICommon
+  {
+    void Add();
+    void Edit();
+    void Delete();
+    void Save();
+  };
+
+  [default_interface]
+  unsealed runtimeclass Common : ICommon
+  {
+    Common();
+  }
+
+  // Service
+  interface IServices
+  {
+    String ServiceCode;
+    String ServiceName;
+  };
+
+  runtimeclass Service : IServices, ICommon
+  {
+    Service();
+    Windows.Foundation.IAsyncOperation<IVector<Service> > GetCollection{ get; };
+  }
+
+  // Desk
+  interface IDesks
+  {
+    String DeskNumber;
+    String DeskCode;
+    String DeskName;
+  };
+
+  runtimeclass Desk : IDesks, ICommon
+  {
+    Desk();
+    Windows.Foundation.IAsyncOperation<IVector<Desk> > GetCollection{ get; };
+  }
+
+  // Operator
+  interface IOperators
+  {
+    String FirstName;
+    String LastName;
+    Date BirthDate;
+  };
+
+  runtimeclass Operator : IOperators, ICommon
+  {
+    Operator();
+    String BadgeCode;
+    Windows.Foundation.IAsyncOperation<IVector<Operator> > GetCollection{ get; };
+  }
+
+  // Ticket
+  interface IImageFiles
+  {
+    Windows.Storage.StorageFile ImageFile;
+  };
+
+  interface ITickets
+  {
+    String TicketNumber;
+    String TicketBarcode;
+    Int32 MaxQueueItems;
+    Date CreationDate;
+    Windows.Storage.StorageFile TicketQRCode;
+  };
+
+  // Runtime classes
+  unsealed runtimeclass Ticket : ITickets, IImageFiles, ICommon, IServices, IDesks, IOperators
+  {
+    Ticket();
+    void Create();
+    String TicketToString{ get; };
+  }
+
+  [default_interface]
+  unsealed runtimeclass OperationsQueue : IServices, IDesks, ITickets, ICommon
+  {
+    OperationsQueue();
+    Windows.Foundation.IAsyncOperation<IVector<OperationsQueue> > GetCollection{ get; };
+    void OperationItemAdded(Boolean isAdded);
+    void OperationCompleted(Boolean isCompleted);
+    event Windows.Foundation.EventHandler<TicketMachine.StartQueueEventArgs> OnQueueItemAdded;
+    event Windows.Foundation.EventHandler<TicketMachine.CloseOperationEventArgs> OnOperationCompleted;
+  }
+
+  [default_interface]
+  unsealed runtimeclass OperationsLog : IServices, ITickets, ICommon
+  {
+    OperationsLog();
+    Windows.Foundation.IAsyncOperation<IVector<OperationsLog> > GetCollection{ get; };
+  }
+
+  runtimeclass StartQueueEventArgs
+  {
+    Boolean ItemAdded{ get; };
+  }
+
+  runtimeclass CloseOperationEventArgs
+  {
+    Boolean OperationClosed{ get; };
+  }
+}
