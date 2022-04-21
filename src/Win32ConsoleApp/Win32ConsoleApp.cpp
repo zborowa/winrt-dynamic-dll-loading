@@ -46,9 +46,9 @@ int main()
     // #### 4. Set the activation factory
     IActivationFactory* activationFactoryP;
     hRes = (abstractionFactoryFp)(activableClassName, &activationFactoryP);
-    if (!activationFactoryP) return EXIT_FAILURE;
+    if (!activationFactoryP || hRes != S_OK) return EXIT_FAILURE;
 
-    // #### 4.1. Get the runtime class name to check if everything is going fine
+    // #### 5. Get the runtime class name to check if everything is going fine
     HSTRING className;
     activationFactoryP->GetRuntimeClassName(&className);
     if (!className) return EXIT_FAILURE;
@@ -57,9 +57,17 @@ int main()
     IID iid = winrt::guid_of<winrt::TicketMachine::ITicketFactory>();
     winrt::TicketMachine::ITicketFactory* iTicketFactory;
     hRes = activationFactoryP->QueryInterface(iid, (void**) & iTicketFactory); // iTicketFactory stays uninitialized
+    if (!iTicketFactory || hRes != S_OK) return EXIT_FAILURE;
 
     // ### ?. ...
-    ;
+    
+    // ### Throws access violation exception
+    //winrt::Windows::Foundation::IInspectable baseInterface, innerInterface;
+    //winrt::TicketMachine::Ticket ticket = iTicketFactory->CreateInstance(baseInterface, innerInterface);
+
+    // ### Instantaties fine but only because of the static type linking
+    //winrt::TicketMachine::Ticket ticket = winrt::impl::call_factory<winrt::TicketMachine::Ticket, winrt::TicketMachine::ITicketFactory>([&](winrt::TicketMachine::ITicketFactory const& f) { return f.CreateInstance(baseInterface, innerInterface); });
+    //ticket.Create();
 
     // #### ?. Profit???
     ;
